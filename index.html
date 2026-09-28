@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgroGestão — Layout</title>
+<style>
+  :root{
+    --bg:#12181a; --surface:#1b2225; --surface-2:#222b2e; --border:#2b3538;
+    --text:#eef2f0; --muted:#8fa19c; --accent:#8fbf8d; --accent-2:#d9a15b;
+    --danger:#d9694a; --radius:14px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit;margin:0;padding:0}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; justify-content:center;
+  }
+  .app{
+    width:100%; max-width:430px; min-height:100%;
+    display:flex; flex-direction:column; position:relative;
+    background:var(--bg); overflow-x:hidden;
+  }
+  /* Top bar */
+  .topbar{
+    padding:calc(env(safe-area-inset-top,0px) + 18px) 20px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--border);
+  }
+  .topbar .greet h1{font-size:1.05rem;font-weight:600}
+  .topbar .greet p{font-size:.8rem;color:var(--muted);margin-top:2px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--surface-2);
+    border:1px solid var(--border)}
+  .screen-title{padding:18px 20px 4px;font-size:1.25rem;font-weight:600}
+  .screen-sub{padding:0 20px 14px;font-size:.82rem;color:var(--muted)}
+
+  /* Screens */
+  .screens{flex:1; overflow-y:auto; padding-bottom:96px}
+  .screen{display:none; padding:0 20px 8px}
+  .screen.active{display:block}
+
+  /* Generic building blocks */
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:16px; margin-bottom:14px;
+  }
+  .section-label{font-size:.78rem;color:var(--muted);text-transform:none;
+    margin:18px 0 10px; font-weight:600}
+  .kpi-row{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
+  .kpi{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:14px;
+  }
+  .kpi .val{font-size:1.3rem;font-weight:700}
+  .kpi .lbl{font-size:.76rem;color:var(--muted);margin-top:2px}
+  .kpi .delta{font-size:.72rem;color:var(--accent);margin-top:6px}
+  .kpi .delta.down{color:var(--danger)}
+
+  .list-item{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 0; border-bottom:1px solid var(--border);
+  }
+  .list-item:last-child{border-bottom:none}
+  .thumb{width:42px;height:42px;border-radius:10px;background:var(--surface-2);
+    border:1px solid var(--border); flex-shrink:0}
+  .thumb.round{border-radius:50%}
+  .li-main{flex:1; min-width:0}
+  .li-title{font-size:.9rem;font-weight:600}
+  .li-sub{font-size:.76rem;color:var(--muted);margin-top:2px}
+  .li-end{font-size:.82rem;font-weight:600; text-align:right}
+  .li-end.pos{color:var(--accent)}
+  .li-end.neg{color:var(--danger)}
+
+  .tag{display:inline-block;font-size:.68rem;padding:3px 8px;border-radius:20px;
+    background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
+  .tag.warn{color:var(--accent-2); border-color:var(--accent-2)}
+  .tag.ok{color:var(--accent); border-color:var(--accent)}
+
+  .searchbar{
+    display:flex; align-items:center; gap:8px; background:var(--surface);
+    border:1px solid var(--border); border-radius:12px; padding:11px 14px;
+    color:var(--muted); font-size:.85rem; margin-bottom:16px;
+  }
+  .chips{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; margin-bottom:16px}
+  .chip{
+    flex-shrink:0; background:var(--surface); border:1px solid var(--border);
+    color:var(--muted); font-size:.78rem; padding:8px 14px; border-radius:20px;
+  }
+  .chip.active{background:var(--accent); border-color:var(--accent); color:#0e1412; font-weight:600}
+  .li-hide{display:none}
+  .chart-placeholder{
+    height:120px; border-radius:10px; background:var(--surface-2);
+    border:1px solid var(--border); position:relative; overflow:hidden;
+  }
+  .chart-placeholder svg{position:absolute; inset:0; width:100%; height:100%}
+
+  .grid-mods{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .mod{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 10px; text-align:center; cursor:default;
+  }
+  .mod[onclick]{cursor:pointer}
+  .mod .ic{width:34px;height:34px;border-radius:9px;background:var(--surface-2);
+    margin:0 auto 8px}
+  .mod .t{font-size:.74rem; color:var(--muted)}
+
+  .fab{
+    position:absolute; right:20px; bottom:calc(96px + env(safe-area-inset-bottom,0px));
+    width:52px;height:52px;border-radius:50%; background:var(--accent);
+    color:#0e1412; font-size:1.6rem; display:flex; align-items:center; justify-content:center;
+    border:none; box-shadow:0 6px 16px rgba(0,0,0,.4);
+  }
+
+  /* Bottom nav */
+  .navbar{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:10px 6px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--surface); border-top:1px solid var(--border);
+    display:flex; justify-content:space-around;
+  }
+  .navbtn{
+    background:none; border:none; color:var(--muted); display:flex; flex-direction:column;
+    align-items:center; gap:4px; font-size:.66rem; padding:4px 6px; width:64px;
+  }
+  .navbtn svg{width:22px;height:22px}
+  .navbtn.active{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== HOME ===== -->
+  <div class="topbar">
+    <div class="greet">
+      <h1>Olá, Fazenda Santa Luzia</h1>
+      <p>Quinta-feira, 18 de setembro</p>
+    </div>
+    <div class="avatar"></div>
+  </div>
+
+  <div class="screens">
+    <div class="screen active" id="s-home">
+      <div class="section-label" style="margin-top:16px">Resumo de hoje</div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="val">340 L</div><div class="lbl">Leite produzido</div><div class="delta">+4% vs ontem</div></div>
+        <div class="kpi"><div class="val">128</div><div class="lbl">Animais no plantel</div><div class="delta">2 novos partos</div></div>
+        <div class="kpi"><div class="val">R$ 3.180</div><div class="lbl">Saldo do mês</div><div class="delta">Receita &gt; Despesa</div></div>
+        <div class="kpi"><div class="val">5</div><div class="lbl">Alertas ativos</div><div class="delta down">2 urgentes</div></div>
+      </div>
+
+      <div class="section-label">Alertas e lembretes</div>
+      <div class="card">
+        <div class="list-item">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Secagem prevista — Vaca 214</div><div class="li-sub">Iniciar em 3 dias</div></div>
+          <span class="tag warn">Secagem</span>
+        </div>
+        <div class="list-item">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Parto previsto — Novilha 087</div><div class="li-sub">Em 12 dias</div></div>
+          <span class="tag ok">Parto</span>
+        </div>
+        <div class="list-item">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Estoque baixo — Sêmen Girolando</div><div class="li-sub">6 doses restantes</div></div>
+          <span class="tag warn">Estoque</span>
+        </div>
+      </div>
+
+      <div class="section-label">Pedidos — nata e manteiga</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Mercado do Zé</div><div class="li-sub">10 potes de nata · entrega sexta</div></div>
+          <span class="tag warn">Em produção</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">D. Terezinha</div><div class="li-sub">5 un. de manteiga · retirada</div></div>
+          <span class="tag">Em aberto</span>
+        </div>
+      </div>
+
+      <div class="section-label">Acesso rápido</div>
+      <div class="grid-mods">
+        <div class="mod"><div class="ic"></div><div class="t">Reprodução</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Nutrição</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Derivados</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Estoque</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Calendário</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Relatórios</div></div>
+      </div>
+    </div>
+
+    <!-- ===== REBANHO ===== -->
+    <div class="screen" id="s-rebanho">
+      <div class="screen-title">Rebanho</div>
+      <div class="screen-sub">128 animais cadastrados</div>
+      <div class="searchbar">🔍 Buscar por brinco, nome ou lote</div>
+      <div class="chips">
+        <button class="chip active" data-cat="todas" onclick="filterRebanho('todas',this)">Todas · 128</button>
+        <button class="chip" data-cat="vaca" onclick="filterRebanho('vaca',this)">Vacas leiteiras · 74</button>
+        <button class="chip" data-cat="novilha" onclick="filterRebanho('novilha',this)">Novilhas · 31</button>
+        <button class="chip" data-cat="bezerro" onclick="filterRebanho('bezerro',this)">Bezerros · 23</button>
+      </div>
+      <div class="card" style="padding:0" id="rebanho-list">
+        <div class="list-item" data-cat="vaca" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Vaca 214 — Malhada</div><div class="li-sub">Holandesa · Lactação · Lote 2</div></div>
+          <span class="tag ok">Ativa</span>
+        </div>
+        <div class="list-item" data-cat="vaca" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Vaca 190 — Estrela</div><div class="li-sub">Holandesa · Seca</div></div>
+          <span class="tag">Seca</span>
+        </div>
+        <div class="list-item" data-cat="vaca" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Vaca 233 — Mimosa</div><div class="li-sub">Girolando · Lactação · Lote 1</div></div>
+          <span class="tag ok">Ativa</span>
+        </div>
+        <div class="list-item" data-cat="novilha" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Novilha 087</div><div class="li-sub">Girolando · Pré-parto</div></div>
+          <span class="tag warn">Atenção</span>
+        </div>
+        <div class="list-item" data-cat="novilha" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Novilha 142</div><div class="li-sub">Holandesa · Apta à IA</div></div>
+          <span class="tag">Apta</span>
+        </div>
+        <div class="list-item" data-cat="bezerro" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Bezerro 305</div><div class="li-sub">Nascido há 9 dias · Macho</div></div>
+          <span class="tag">Recria</span>
+        </div>
+        <div class="list-item" data-cat="bezerro" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Bezerra 306</div><div class="li-sub">Nascida há 4 dias · Fêmea</div></div>
+          <span class="tag">Recria</span>
+        </div>
+      </div>
+      <button class="fab" onclick="return false">+</button>
+    </div>
+
+    <!-- ===== LEITE ===== -->
+    <div class="screen" id="s-leite">
+      <div class="screen-title">Produção Leiteira</div>
+      <div class="screen-sub">Ordenha da manhã e da tarde</div>
+      <div class="card">
+        <div class="section-label" style="margin-top:0">Produção — últimos 7 dias</div>
+        <div class="chart-placeholder">
+          <svg viewBox="0 0 300 120" preserveAspectRatio="none">
+            <polyline points="0,90 40,70 80,78 120,55 160,60 200,40 240,48 300,30"
+              fill="none" stroke="#8fbf8d" stroke-width="2.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section-label">Lançamentos recentes</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Ordenha manhã — Tanque</div><div class="li-sub">Hoje, 06:40</div></div>
+          <div class="li-end">182 L</div>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Ordenha tarde — Tanque</div><div class="li-sub">Ontem, 17:10</div></div>
+          <div class="li-end">158 L</div>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Vaca 214 — individual</div><div class="li-sub">Ontem, 06:30</div></div>
+          <div class="li-end">24 L</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FINANCEIRO ===== -->
+    <div class="screen" id="s-financeiro">
+      <div class="screen-title">Financeiro</div>
+      <div class="screen-sub">Setembro de 2026</div>
+      <div class="card">
+        <div class="kpi-row">
+          <div class="kpi"><div class="val" style="color:var(--accent)">R$ 9.420</div><div class="lbl">Receitas</div></div>
+          <div class="kpi"><div class="val" style="color:var(--danger)">R$ 6.240</div><div class="lbl">Despesas</div></div>
+        </div>
+      </div>
+      <div class="section-label">Contas a pagar e receber</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Laticínio Vale Verde</div><div class="li-sub">Venda de leite — a receber</div></div>
+          <div class="li-end pos">+R$ 4.180</div>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Ração & Concentrados Ltda</div><div class="li-sub">Vence em 5 dias</div></div>
+          <div class="li-end neg">-R$ 1.320</div>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Venda de derivados</div><div class="li-sub">Clientes diversos</div></div>
+          <div class="li-end pos">+R$ 860</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REPRODUÇÃO E INSEMINAÇÃO ===== -->
+    <div class="screen" id="s-reproducao">
+      <div class="screen-title">Reprodução e Inseminação</div>
+      <div class="screen-sub">Catálogo de sêmen e histórico reprodutivo</div>
+
+      <div class="section-label" style="margin-top:0">Catálogo de sêmen</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Touro Holando 22 — ABS</div><div class="li-sub">Saldo: 14 doses · R$ 38/dose</div></div>
+          <span class="tag ok">Disponível</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Touro Girolando 8 — CRV</div><div class="li-sub">Saldo: 6 doses · R$ 45/dose</div></div>
+          <span class="tag warn">Baixo estoque</span>
+        </div>
+      </div>
+
+      <div class="section-label">Histórico reprodutivo</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Novilha 142 — IA</div><div class="li-sub">18/09 · Inseminador: Carlos</div></div>
+          <span class="tag warn">Aguardando</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Vaca 233 — IA</div><div class="li-sub">02/09 · Inseminador: Carlos</div></div>
+          <span class="tag ok">Confirmada</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Vaca 190 — Cobrição natural</div><div class="li-sub">21/08</div></div>
+          <span class="tag">Registrada</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ESTOQUE GERAL ===== -->
+    <div class="screen" id="s-estoque">
+      <div class="screen-title">Estoque Geral</div>
+      <div class="screen-sub">Insumos, medicamentos e materiais</div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="val">32</div><div class="lbl">Itens cadastrados</div></div>
+        <div class="kpi"><div class="val" style="color:var(--accent-2)">4</div><div class="lbl">Pontos de reposição</div></div>
+      </div>
+      <div class="section-label">Itens</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Ração concentrada</div><div class="li-sub">450 kg em estoque</div></div>
+          <span class="tag ok">Normal</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Vacina aftosa</div><div class="li-sub">12 doses · validade 03/2027</div></div>
+          <span class="tag warn">Repor</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Detergente de ordenha</div><div class="li-sub">8 litros em estoque</div></div>
+          <span class="tag ok">Normal</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb"></div>
+          <div class="li-main"><div class="li-title">Doses de sêmen (geral)</div><div class="li-sub">20 doses no botijão</div></div>
+          <span class="tag warn">Repor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PEDIDOS — NATA E MANTEIGA ===== -->
+    <div class="screen" id="s-pedidos">
+      <div class="screen-title">Pedidos — Nata e Manteiga</div>
+      <div class="screen-sub">Encomendas de clientes e estoque pronto</div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="val">18 un.</div><div class="lbl">Nata em estoque</div></div>
+        <div class="kpi"><div class="val">24 un.</div><div class="lbl">Manteiga em estoque</div></div>
+      </div>
+      <div class="section-label">Pedidos em andamento</div>
+      <div class="card" style="padding:0">
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Mercado do Zé</div><div class="li-sub">10 potes de nata · entrega sexta</div></div>
+          <span class="tag warn">Em produção</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">D. Terezinha</div><div class="li-sub">5 un. de manteiga · retirada</div></div>
+          <span class="tag">Em aberto</span>
+        </div>
+        <div class="list-item" style="padding:14px 16px">
+          <div class="thumb round"></div>
+          <div class="li-main"><div class="li-title">Padaria Trigo Bom</div><div class="li-sub">12 un. de manteiga · pago</div></div>
+          <span class="tag ok">Entregue</span>
+        </div>
+      </div>
+      <button class="fab" onclick="return false">+</button>
+    </div>
+
+    <!-- ===== MAIS ===== -->
+    <div class="screen" id="s-mais">
+      <div class="screen-title">Mais módulos</div>
+      <div class="screen-sub">Demais áreas do sistema</div>
+      <div class="grid-mods">
+        <div class="mod" onclick="go('s-reproducao', document.querySelector('[data-target=s-mais]'))"><div class="ic"></div><div class="t">Reprodução</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Calendário</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Nutrição</div></div>
+        <div class="mod" onclick="go('s-pedidos', document.querySelector('[data-target=s-mais]'))"><div class="ic"></div><div class="t">Pedidos</div></div>
+        <div class="mod" onclick="go('s-estoque', document.querySelector('[data-target=s-mais]'))"><div class="ic"></div><div class="t">Estoque</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Clientes</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Relatórios</div></div>
+        <div class="mod"><div class="ic"></div><div class="t">Configurações</div></div>
+        <div class="mod" onclick="go('s-sobre', document.querySelector('[data-target=s-mais]'))">
+          <div class="ic" style="background:var(--accent); color:#0e1412; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">i</div>
+          <div class="t">Sobre o App</div>
+        </div>
+        <div class="mod"><div class="ic"></div><div class="t">Ajuda</div></div>
+      </div>
+    </div>
+
+    <!-- ===== SOBRE / ARQUITETURA ===== -->
+    <div class="screen" id="s-sobre">
+      <div class="screen-title">Sobre o Sistema</div>
+      <div class="screen-sub">Arquitetura e Especificações</div>
+
+      <div class="section-label" style="margin-top:0">Visão Geral da Arquitetura</div>
+      <div class="card">
+        <p style="font-size:0.85rem; line-height:1.5; margin-bottom:12px;">O sistema a ser desenvolvido é um <strong>Progressive Web App (PWA)</strong> voltado para gestão agropecuária e controle financeiro rural. A aplicação deve ser totalmente responsiva, otimizada para uso em smartphones e tablets em campo, permitindo instalação direta na tela inicial dos aparelhos sem dependência de lojas de aplicativos, além de oferecer suporte a recursos nativos como acesso à câmera para leitura de códigos.</p>
+        <p style="font-size:0.85rem; line-height:1.5; margin-bottom:12px;">A infraestrutura de dados e hospedagem utilizará uma <strong>arquitetura híbrida</strong> dividida entre Firebase e Supabase:</p>
+        <div style="font-size:0.85rem; line-height:1.5; color:var(--muted); display:flex; flex-direction:column; gap:8px;">
+          <div><strong style="color:var(--text);">Firebase:</strong> Responsável pela hospedagem estática de alta velocidade da interface (Firebase Hosting), entrega dos arquivos do PWA aos navegadores móveis e armazenamento em nuvem de eventuais mídias e comprovantes (Firebase Storage).</div>
+          <div><strong style="color:var(--text);">Supabase (PostgreSQL):</strong> Atuará como o banco de dados principal e motor relacional do sistema. É responsável por armazenar as tabelas estruturadas, garantir a integridade referencial entre animais, genealogia, movimentações financeiras e estoque, além de executar cálculos agregados de inventário e custos diretamente via queries SQL, garantindo alta performance e conformidade com limites operacionais gratuitos.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Módulos e Requisitos Funcionais</div>
+      
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">1. Módulo de Rebanho (Animais)</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Cadastro individual:</strong> Registro de vacas, novilhas e bezerros contendo identificação (brinco ou nome), raça, data de nascimento, filiação (pai e mãe) e categoria produtiva.</li>
+          <li><strong style="color:var(--text);">Histórico do animal:</strong> Ficha cadastral com linhagem, pesagens periódicas, transferências de lote e histórico reprodutivo.</li>
+          <li><strong style="color:var(--text);">Identificação rápida via câmera:</strong> Acionamento da câmera do smartphone para escanear QR Code ou código de barras nos brincos dos animais, carregando instantaneamente a ficha correspondente.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">2. Módulo de Reprodução e Inseminação</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Catálogo e estoque de sêmen:</strong> Registro de touros, raças, empresa fornecedora, saldo de doses por botijão/caneca e custo unitário por dose.</li>
+          <li><strong style="color:var(--text);">Verificação e baixa de doses:</strong> Validação de compatibilidade de linhagem e baixa automática no saldo de doses a cada registro de inseminação.</li>
+          <li><strong style="color:var(--text);">Histórico reprodutivo:</strong> Apontamento de datas de cio, inseminações artificiais ou cobrições naturais e identificação do inseminador.</li>
+          <li><strong style="color:var(--text);">Registro de parições:</strong> Registro da data do parto, matriz, sêmen utilizado, tipo de parto (normal ou assistido), quantidade e sexo das crias, peso ao nascer e cadastro automatizado do novo bezerro na base do rebanho.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">3. Módulo de Alertas e Calendário Automatizado</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Previsão de parto:</strong> Projeção automática da data provável de parto com base na data da inseminação confirmada.</li>
+          <li><strong style="color:var(--text);">Alerta de secagem:</strong> Cálculo e notificações programadas para o momento exato de interrupção da ordenha (secagem da matriz) antes do parto previsto.</li>
+          <li><strong style="color:var(--text);">Agenda sanitária e reprodutiva:</strong> Lembretes de diagnóstico de gestação (toque/ultrassom), desmame e cronograma de vacinações.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">4. Módulo de Produção Leiteira</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Pesagem de leite:</strong> Registro da pesagem individual por matriz (ordenhas matutina e vespertina) ou lançamento consolidado do tanque coletivo diário.</li>
+          <li><strong style="color:var(--text);">Indicadores de lactação:</strong> Acompanhamento de dias em lactação (DEL), médias produtivas por cabeça e apoio para decisões de manejo, secagem ou descarte.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">5. Módulo de Gestão Nutricional</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Dietas e tratos:</strong> Formulação e distribuição de ração, concentrados e volumosos organizados por lotes (lactação, pré-parto, recria e bezerros).</li>
+          <li><strong style="color:var(--text);">Consumo e demanda:</strong> Monitoramento diário e mensal do volume de alimento fornecido a cada grupo de animais.</li>
+          <li><strong style="color:var(--text);">Custo alimentar:</strong> Cruzamento entre volume consumido e valor de compra dos insumos para apuração do custo de nutrição por litro de leite produzido.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">6. Módulo de Processamento e Venda de Derivados</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Transformação e rendimento:</strong> Registro do volume de leite direcionado à produção de derivados (como nata, manteiga e queijos), registrando datas de produção e taxas de rendimento.</li>
+          <li><strong style="color:var(--text);">Estoque de produtos prontos:</strong> Saldo em tempo real dos itens finais embalados e disponíveis para comercialização.</li>
+          <li><strong style="color:var(--text);">Gestão de encomendas:</strong> Controle de pedidos por cliente, volume solicitado, data limite de entrega, forma de pagamento e status da operação (em aberto, em produção, entregue).</li>
+          <li><strong style="color:var(--text);">Carteira de clientes:</strong> Cadastro de contatos e histórico de aquisições para atendimento a entregas e compras recorrentes.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">7. Módulo de Estoque Geral</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Insumos e medicamentos:</strong> Controle de entrada, saída e validade de itens veterinários, vacinas, produtos químicos para higienização de ordenha e ferramentas.</li>
+          <li><strong style="color:var(--text);">Ponto de reposição:</strong> Avisos visuais no painel do sistema quando o estoque de doses de sêmen, medicamentos ou ração atingir patamares críticos.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="li-title" style="margin-bottom:8px; color:var(--accent);">8. Módulo Financeiro Integrado</div>
+        <ul style="font-size:0.85rem; line-height:1.5; padding-left:20px; color:var(--muted); display:flex; flex-direction:column; gap:6px;">
+          <li><strong style="color:var(--text);">Fluxo de caixa:</strong> Lançamento discriminado de receitas e despesas com filtragem por período e centro de custo.</li>
+          <li><strong style="color:var(--text);">Classificação de receitas:</strong> Separação contábil entre receita de leite in natura entregue ao laticínio, comercialização de derivados processados e venda de matrizes ou bezerros.</li>
+          <li><strong style="color:var(--text);">Detalhamento de despesas:</strong> Rastreamento de custos com concentrados, forragens, doses de sêmen, insumos veterinários, combustíveis e manutenções operacionais.</li>
+          <li><strong style="color:var(--text);">Contas a pagar e a receber:</strong> Painel de vencimentos futuros, cobranças pendentes e prazos de acerto com fornecedores.</li>
+          <li><strong style="color:var(--text);">Relatórios analíticos:</strong> Apuração da rentabilidade mensal consolidada, margem líquida por categoria de produto e custo operacional unitário por litro produzido.</li>
+        </ul>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <div class="navbar">
+    <button class="navbtn active" data-target="s-home" onclick="go('s-home',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      Início
+    </button>
+    <button class="navbtn" data-target="s-rebanho" onclick="go('s-rebanho',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+      Rebanho
+    </button>
+    <button class="navbtn" data-target="s-leite" onclick="go('s-leite',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6l1 5-2 2v11a2 2 0 0 1-2 2h0a2 2 0 0 1-2-2V9L8 7z"/></svg>
+      Leite
+    </button>
+    <button class="navbtn" data-target="s-financeiro" onclick="go('s-financeiro',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1.4 1.3-2.5 3-2.5s3 1 3 2.2-1.3 1.8-3 2.3-3 1-3 2.3 1.3 2.2 3 2.2 3-1.1 3-2.5"/></svg>
+      Financeiro
+    </button>
+    <button class="navbtn" data-target="s-mais" onclick="go('s-mais',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      Mais
+    </button>
+  </div>
+</div>
+
+<script>
+function go(id, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelector('.screens').scrollTop = 0;
+}
+function filterRebanho(cat, chip){
+  document.querySelectorAll('#s-rebanho .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  document.querySelectorAll('#rebanho-list .list-item').forEach(item=>{
+    const show = cat === 'todas' || item.dataset.cat === cat;
+    item.classList.toggle('li-hide', !show);
+  });
+}
+</script>
+</body>
+</html>

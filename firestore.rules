@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Para desenvolvimento local, permitir tudo.
+    // ATENÇÃO: Atualizar antes de ir para produção.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
